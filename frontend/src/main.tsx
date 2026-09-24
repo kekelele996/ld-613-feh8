@@ -1,12 +1,13 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { routes } from "./router/routes";
 import { mockData } from "./mocks/seedData";
 import { StatusBadge } from "./components/common/StatusBadge";
 import { StatCard } from "./components/common/StatCard";
+import { PreviewPage } from "./pages/PreviewPage";
 import "./styles.css";
 
-function Page({ name }: { name: string }) {
+function Dashboard({ name }: { name: string }) {
   const entities = Object.entries(mockData);
   const total = useMemo(() => entities.reduce((sum, [, rows]) => sum + rows.length, 0), [entities]);
   return <main className="page">
@@ -39,15 +40,20 @@ function Page({ name }: { name: string }) {
   </main>;
 }
 
+const pageContent: Record<string, (name: string) => JSX.Element> = {
+  "/preview": () => <PreviewPage />
+};
+
 function App() {
   const [active, setActive] = useState<string>(routes[0]?.route ?? "/dashboard");
   const current = routes.find((route) => route.route === active) ?? routes[0];
+  const renderPage = pageContent[active];
   return <div className="shell">
     <aside>
       <div className="brand">舞台灯光编排模拟器</div>
       <nav>{routes.map((route) => <button key={route.route} className={active === route.route ? "active" : ""} onClick={() => setActive(route.route)}>{route.name}</button>)}</nav>
     </aside>
-    <Page name={current?.name ?? "工作台"} />
+    {renderPage ? renderPage(current?.name ?? "") : <Dashboard name={current?.name ?? "工作台"} />}
   </div>;
 }
 
